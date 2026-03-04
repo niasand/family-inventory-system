@@ -1,0 +1,16 @@
+{
+  "name": "family-inventory",
+  "version": "1.0.0",
+  "description": "家庭物品管理系统",
+  "main": "README.md",
+  "scripts": {
+    "dev:all": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\" --prefix-colors blue,cyan"
+  },
+  "keywords": ["inventory", "family", "management", "vue", "nodejs"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
