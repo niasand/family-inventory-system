@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { itemAPI } from '../api';
+import { itemAPI, backupAPI } from '../api';
 
 export const useItemStore = defineStore('item', () => {
   const items = ref([]);
@@ -120,6 +120,35 @@ export const useItemStore = defineStore('item', () => {
     }
   };
 
+  const importData = async (data, overwrite = false) => {
+    loading.value = true;
+    try {
+      const response = await backupAPI.import(data, overwrite);
+      // 刷新数据
+      await fetchItems();
+      await fetchCategories();
+      await fetchTags();
+      return response;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const deleteAll = async () => {
+    loading.value = true;
+    try {
+      // 清空所有物品
+      for (const item of items.value) {
+        await itemAPI.delete(item.id);
+      }
+      items.value = [];
+      total.value = 0;
+      return true;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     items,
     categories,
@@ -135,6 +164,8 @@ export const useItemStore = defineStore('item', () => {
     updateItem,
     deleteItem,
     fetchCategories,
-    fetchTags
+    fetchTags,
+    importData,
+    deleteAll
   };
 });
