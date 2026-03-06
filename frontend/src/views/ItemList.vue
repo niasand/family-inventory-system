@@ -53,6 +53,38 @@
           </el-select>
         </div>
 
+        <div class="filter-chip" :class="{ active: selectedLocation }">
+          <el-select
+            v-model="selectedLocation"
+            placeholder="📍 位置筛选"
+            clearable
+            @change="handleFilter"
+          >
+            <el-option
+              v-for="location in store.locations"
+              :key="location.id"
+              :label="location.name"
+              :value="location.name"
+            />
+          </el-select>
+        </div>
+
+        <div class="filter-chip" :class="{ active: selectedStatus }">
+          <el-select
+            v-model="selectedStatus"
+            placeholder="🔹 状态筛选"
+            clearable
+            @change="handleFilter"
+          >
+            <el-option
+              v-for="status in store.statuses"
+              :key="status.value"
+              :label="status.label"
+              :value="status.value"
+            />
+          </el-select>
+        </div>
+
         <button class="refresh-btn" @click="loadItems">
           <el-icon :class="{ 'is-loading': store.loading }"><Refresh /></el-icon>
           刷新
@@ -89,6 +121,16 @@
         <div class="stat-info">
           <span class="stat-value">{{ store.tags.length }}</span>
           <span class="stat-label">标签数量</span>
+        </div>
+      </div>
+
+      <div class="stat-card glass-card">
+        <div class="stat-icon green">
+          <el-icon><Location /></el-icon>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value">{{ store.locations.length }}</span>
+          <span class="stat-label">存放位置</span>
         </div>
       </div>
     </div>
@@ -143,13 +185,18 @@
           <div v-if="item.purchase_price" class="price-tag">
             ¥{{ formatPrice(item.purchase_price) }}
           </div>
+          <!-- 状态标签 -->
+          <div v-if="item.status" class="status-tag" :style="getStatusStyle(item.status)">
+            {{ getStatusLabel(item.status) }}
+          </div>
         </div>
 
         <div class="item-content">
           <h3 class="item-name">{{ item.name }}</h3>
           
-          <div v-if="item.category" class="item-category">
-            <span class="category-badge">{{ item.category }}</span>
+          <div class="item-meta">
+            <span v-if="item.category" class="category-badge">{{ item.category }}</span>
+            <span v-if="item.location" class="location-badge">{{ item.location }}</span>
           </div>
 
           <div v-if="item.tags && item.tags.length" class="item-tags">
@@ -178,7 +225,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useItemStore } from '../store/itemStore';
-import { Search, Refresh, Box, Folder, Collection, Plus, Picture, Close } from '@element-plus/icons-vue';
+import { Search, Refresh, Box, Folder, Collection, Plus, Picture, Close, Location } from '@element-plus/icons-vue';
 
 const router = useRouter();
 const store = useItemStore();
@@ -186,6 +233,8 @@ const store = useItemStore();
 const searchQuery = ref('');
 const selectedCategory = ref('');
 const selectedTag = ref('');
+const selectedLocation = ref('');
+const selectedStatus = ref('');
 
 const filteredItems = computed(() => {
   let result = [...store.items];
@@ -209,6 +258,14 @@ const filteredItems = computed(() => {
     );
   }
   
+  if (selectedLocation.value) {
+    result = result.filter(item => item.location === selectedLocation.value);
+  }
+  
+  if (selectedStatus.value) {
+    result = result.filter(item => item.status === selectedStatus.value);
+  }
+  
   return result;
 });
 
@@ -216,7 +273,9 @@ const loadItems = async () => {
   await Promise.all([
     store.fetchItems(),
     store.fetchCategories(),
-    store.fetchTags()
+    store.fetchTags(),
+    store.fetchLocations(),
+    store.fetchStatuses()
   ]);
 };
 
@@ -247,6 +306,25 @@ const formatPrice = (price) => {
 const truncateDesc = (desc) => {
   if (desc.length <= 50) return desc;
   return desc.substring(0, 50) + '...';
+};
+
+// 获取状态标签样式
+const getStatusStyle = (statusValue) => {
+  const status = store.statuses.find(s => s.value === statusValue);
+  if (status && status.color) {
+    return { 
+      backgroundColor: status.color + '33',
+      color: status.color,
+      borderColor: status.color + '80'
+    };
+  }
+  return {};
+};
+
+// 获取状态标签显示名称
+const getStatusLabel = (statusValue) => {
+  const status = store.statuses.find(s => s.value === statusValue);
+  return status ? status.label : statusValue;
 };
 
 onMounted(() => {
@@ -421,6 +499,10 @@ onMounted(() => {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
 }
 
+.stat-icon.green {
+  background: linear-gradient(135deg, #67c23a 0%, #67c23a 100%);
+}
+
 .stat-info {
   display: flex;
   flex-direction: column;
@@ -552,6 +634,18 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* 状态标签 */
+.status-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+  border: 1px solid;
+}
+
 .item-content {
   padding: 20px;
 }
@@ -564,8 +658,11 @@ onMounted(() => {
   line-height: 1.4;
 }
 
-.item-category {
+.item-meta {
+  display: flex;
+  gap: 8px;
   margin-bottom: 10px;
+  flex-wrap: wrap;
 }
 
 .category-badge {
@@ -573,6 +670,16 @@ onMounted(() => {
   padding: 4px 10px;
   background: rgba(102, 126, 234, 0.1);
   color: #667eea;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.location-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(60, 179, 113, 0.1);
+  color: #3cb371;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;

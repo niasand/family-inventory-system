@@ -4,10 +4,10 @@ const { validateItem } = require('../middleware/validator');
 class ItemController {
   static async getAll(req, res) {
     try {
-      const { search, category, tags, limit = 50, page = 1 } = req.query;
+      const { search, category, tags, status, location, limit = 50, page = 1 } = req.query;
       
       const offset = (page - 1) * limit;
-      const filters = { search, category, tags };
+      const filters = { search, category, tags, status, location };
       
       const items = await Item.findAll(
         parseInt(limit), 
@@ -168,6 +168,24 @@ class ItemController {
       res.status(500).json({
         success: false,
         error: '获取标签失败',
+        details: error.message
+      });
+    }
+  }
+
+  // 获取状态列表
+  static async getStatuses(req, res) {
+    try {
+      const statuses = await Item.getStatuses();
+      res.json({
+        success: true,
+        data: statuses
+      });
+    } catch (error) {
+      console.error('获取状态列表失败:', error);
+      res.status(500).json({
+        success: false,
+        error: '获取状态列表失败',
         details: error.message
       });
     }

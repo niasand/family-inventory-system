@@ -20,7 +20,17 @@ export const itemAPI = {
   update: (id, data) => api.put(`/items/${id}`, data),
   delete: (id) => api.delete(`/items/${id}`),
   getCategories: () => api.get('/items/categories'),
-  getTags: () => api.get('/items/tags')
+  getTags: () => api.get('/items/tags'),
+  getStatuses: () => api.get('/items/statuses')  // 新增：获取状态列表
+};
+
+export const locationAPI = {
+  getAll: () => api.get('/locations'),
+  getById: (id) => api.get(`/locations/${id}`),
+  create: (data) => api.post('/locations', data),
+  update: (id, data) => api.put(`/locations/${id}`, data),
+  delete: (id) => api.delete(`/locations/${id}`),
+  getItemCounts: () => api.get('/locations/counts')  // 获取各位置的物品数量
 };
 
 export const backupAPI = {

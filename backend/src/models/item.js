@@ -17,20 +17,22 @@ class Item {
         purchase_price: itemData.purchase_price || null,
         category: itemData.category || null,
         tags: itemData.tags ? JSON.stringify(itemData.tags) : null,
+        location: itemData.location || null,
+        status: itemData.status || 'active',
         created_at: now,
         updated_at: now
       };
 
       const sql = `
         INSERT INTO items 
-        (id, name, image, description, added_at, purchased_at, purchase_price, category, tags, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, name, image, description, added_at, purchased_at, purchase_price, category, tags, location, status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       db.run(sql, [
         item.id, item.name, item.image, item.description, item.added_at, 
         item.purchased_at, item.purchase_price, item.category, item.tags,
-        item.created_at, item.updated_at
+        item.location, item.status, item.created_at, item.updated_at
       ], function(err) {
         if (err) {
           reject(err);
@@ -62,6 +64,18 @@ class Item {
       if (filters.tags) {
         sql += ' AND tags LIKE ?';
         params.push(`%"${filters.tags}"%`);
+      }
+
+      // 按状态筛选
+      if (filters.status) {
+        sql += ' AND status = ?';
+        params.push(filters.status);
+      }
+
+      // 按存放位置筛选
+      if (filters.location) {
+        sql += ' AND location = ?';
+        params.push(filters.location);
       }
 
       sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
@@ -150,6 +164,14 @@ class Item {
         updateFields.push('tags = ?');
         params.push(itemData.tags ? JSON.stringify(itemData.tags) : null);
       }
+      if (itemData.location !== undefined) {
+        updateFields.push('location = ?');
+        params.push(itemData.location);
+      }
+      if (itemData.status !== undefined) {
+        updateFields.push('status = ?');
+        params.push(itemData.status);
+      }
       
       updateFields.push('updated_at = ?');
       params.push(now);
@@ -211,6 +233,18 @@ class Item {
         params.push(filters.category);
       }
 
+      // 按状态筛选
+      if (filters.status) {
+        sql += ' AND status = ?';
+        params.push(filters.status);
+      }
+
+      // 按存放位置筛选
+      if (filters.location) {
+        sql += ' AND location = ?';
+        params.push(filters.location);
+      }
+
       db.get(sql, params, (err, row) => {
         if (err) {
           reject(err);
@@ -266,6 +300,16 @@ class Item {
         resolve(Array.from(tags).sort());
       });
     });
+  }
+
+  // 获取所有状态选项
+  static getStatuses() {
+    return Promise.resolve([
+      { value: 'active', label: '在用', color: '#67c23a' },
+      { value: 'idle', label: '闲置', color: '#909399' },
+      { value: 'damaged', label: '损坏', color: '#e6a23c' },
+      { value: 'discarded', label: '已丢弃', color: '#f56c6c' }
+    ]);
   }
 }
 

@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const database = require('./utils/database');
 const itemRoutes = require('./routes/items');
+const locationRoutes = require('./routes/locations');
 const backupRoutes = require('./routes/backup');
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api/items', itemRoutes);
+app.use('/api/locations', locationRoutes);  // 新增：存放位置路由
 app.use('/api/backup', backupRoutes);
 
 app.get('/api/health', (req, res) => {
@@ -33,10 +35,11 @@ app.get('/api/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({ 
     message: '家庭物品管理系统 API',
-    version: '1.0.0',
+    version: '1.1.0',
     endpoints: {
       health: '/api/health',
       items: '/api/items',
+      locations: '/api/locations',
       backup: '/api/backup'
     }
   });

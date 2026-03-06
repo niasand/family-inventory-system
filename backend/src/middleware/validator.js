@@ -22,7 +22,26 @@ const itemSchema = Joi.object({
   tags: Joi.array().items(Joi.string().max(50)).max(10).allow(null).messages({
     'array.max': '最多10个标签',
     'string.max': '每个标签最多50个字符'
+  }),
+  location: Joi.string().max(100).allow('').allow(null).messages({
+    'string.max': '存放位置最多100个字符'
+  }),
+  status: Joi.string().valid('active', 'idle', 'damaged', 'discarded').allow('').allow(null).messages({
+    'any.only': '状态必须是：在用(active)、闲置(idle)、损坏(damaged)或已丢弃(discarded)'
   })
+});
+
+const locationSchema = Joi.object({
+  name: Joi.string().required().min(1).max(100).messages({
+    'string.empty': '位置名称不能为空',
+    'string.min': '位置名称至少需要1个字符',
+    'string.max': '位置名称最多100个字符',
+    'any.required': '位置名称是必填项'
+  }),
+  description: Joi.string().max(500).allow('').allow(null).messages({
+    'string.max': '描述最多500个字符'
+  }),
+  parent_id: Joi.string().allow('').allow(null)
 });
 
 const validateItem = (req, res, next) => {
@@ -40,7 +59,24 @@ const validateItem = (req, res, next) => {
   next();
 };
 
+const validateLocation = (req, res, next) => {
+  const { error, value } = locationSchema.validate(req.body, { abortEarly: false });
+  
+  if (error) {
+    const errors = error.details.map(detail => detail.message);
+    return res.status(400).json({
+      error: '数据验证失败',
+      details: errors
+    });
+  }
+  
+  req.validatedBody = value;
+  next();
+};
+
 module.exports = {
   validateItem,
-  itemSchema
+  validateLocation,
+  itemSchema,
+  locationSchema
 };

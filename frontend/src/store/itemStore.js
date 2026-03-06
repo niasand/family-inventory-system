@@ -1,18 +1,22 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { itemAPI, backupAPI } from '../api';
+import { itemAPI, locationAPI, backupAPI } from '../api';
 
 export const useItemStore = defineStore('item', () => {
   const items = ref([]);
   const categories = ref([]);
   const tags = ref([]);
+  const locations = ref([]);
+  const statuses = ref([]);
   const loading = ref(false);
   const total = ref(0);
   const currentPage = ref(1);
   const filters = ref({
     search: '',
     category: '',
-    tags: ''
+    tags: '',
+    status: '',
+    location: ''
   });
 
   const filteredItems = computed(() => {
@@ -35,6 +39,14 @@ export const useItemStore = defineStore('item', () => {
       result = result.filter(item => 
         item.tags && item.tags.includes(filters.value.tags)
       );
+    }
+    
+    if (filters.value.status) {
+      result = result.filter(item => item.status === filters.value.status);
+    }
+    
+    if (filters.value.location) {
+      result = result.filter(item => item.location === filters.value.location);
     }
     
     return result;
@@ -120,6 +132,62 @@ export const useItemStore = defineStore('item', () => {
     }
   };
 
+  // 获取状态列表
+  const fetchStatuses = async () => {
+    try {
+      const response = await itemAPI.getStatuses();
+      statuses.value = response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // 获取存放位置列表
+  const fetchLocations = async () => {
+    try {
+      const response = await locationAPI.getAll();
+      locations.value = response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // 创建存放位置
+  const createLocation = async (data) => {
+    try {
+      const response = await locationAPI.create(data);
+      locations.value.push(response.data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // 更新存放位置
+  const updateLocation = async (id, data) => {
+    try {
+      const response = await locationAPI.update(id, data);
+      const index = locations.value.findIndex(loc => loc.id === id);
+      if (index > -1) {
+        locations.value[index] = response.data;
+      }
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // 删除存放位置
+  const deleteLocation = async (id) => {
+    try {
+      await locationAPI.delete(id);
+      locations.value = locations.value.filter(loc => loc.id !== id);
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const importData = async (data, overwrite = false) => {
     loading.value = true;
     try {
@@ -128,6 +196,7 @@ export const useItemStore = defineStore('item', () => {
       await fetchItems();
       await fetchCategories();
       await fetchTags();
+      await fetchLocations();
       return response;
     } finally {
       loading.value = false;
@@ -153,6 +222,8 @@ export const useItemStore = defineStore('item', () => {
     items,
     categories,
     tags,
+    locations,
+    statuses,
     loading,
     total,
     currentPage,
@@ -165,6 +236,11 @@ export const useItemStore = defineStore('item', () => {
     deleteItem,
     fetchCategories,
     fetchTags,
+    fetchStatuses,
+    fetchLocations,
+    createLocation,
+    updateLocation,
+    deleteLocation,
     importData,
     deleteAll
   };
