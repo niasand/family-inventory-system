@@ -147,7 +147,7 @@ const uploadRef = ref();
 
 const exporting = ref(false);
 const importing = ref(false);
- selectedFile = ref(null);
+const selectedFile = ref(null);
 const overwriteMode = ref(false);
 
 const categoriesCount = computed(() => store.categories.length);

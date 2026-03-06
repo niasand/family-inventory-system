@@ -1,7 +1,7 @@
 <template>
   <div class="item-list">
     <el-row :gutter="16" class="filters-row">
-      <el-col :xs="24" :sm="8" :md="6">
+      <el-col :xs="24" :sm="8" :md="8">
         <el-input
           v-model="searchQuery"
           placeholder="搜索物品名称、描述、分类"

@@ -96,7 +96,7 @@
           :precision="2"
           :min="0"
           placeholder="请输入购买价格（可选）"
-          style="width: 200px"
+          style="width: 240px"
         />
         <span style="margin-left: 8px; color: #909399">元</span>
       </el-form-item>
