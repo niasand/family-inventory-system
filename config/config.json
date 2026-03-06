@@ -1,0 +1,12 @@
+{
+  "host": "http://localhost:3000",
+  "base_path": "/api",
+  "endpoints": {
+    "items": "/items",
+    "categories": "/items/categories",
+    "tags": "/items/tags",
+    "backup_export": "/backup/export",
+    "backup_import": "/backup/import",
+    "health": "/health"
+  }
+}

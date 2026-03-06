@@ -11,11 +11,12 @@
           @keyup.enter="handleSearch"
         />
       </el-col>
-      <el-col :xs="12" :sm="8" :md="4">
+      <el-col :xs="12" :sm="8" :md="5">
         <el-select
           v-model="selectedCategory"
           placeholder="选择分类"
           clearable
+          style="width: 100%"
           @change="handleFilter"
         >
           <el-option
@@ -26,11 +27,12 @@
           />
         </el-select>
       </el-col>
-      <el-col :xs="12" :sm="8" :md="4">
+      <el-col :xs="12" :sm="8" :md="5">
         <el-select
           v-model="selectedTag"
           placeholder="选择标签"
           clearable
+          style="width: 100%"
           @change="handleFilter"
         >
           <el-option

@@ -1,0 +1,27 @@
+{
+  "create_item": {
+    "name": "测试物品-手机",
+    "image": "https://example.com/phone.jpg",
+    "description": "这是一个测试用的手机物品",
+    "category": "电子产品",
+    "tags": ["手机", "数码", "测试"],
+    "purchase_price": 4999.00
+  },
+  "update_item": {
+    "name": "测试物品-手机（已更新）",
+    "description": "更新后的描述",
+    "purchase_price": 3999.00
+  },
+  "backup_data": {
+    "items": [
+      {
+        "name": "备份测试物品",
+        "description": "用于备份测试",
+        "category": "测试分类",
+        "tags": ["测试", "备份"]
+      }
+    ],
+    "categories": ["测试分类"],
+    "tags": ["测试", "备份"]
+  }
+}

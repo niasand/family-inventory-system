@@ -36,7 +36,7 @@ class Item {
           reject(err);
           return;
         }
-        item.id = this.lastID;
+        // 使用 UUID 作为 ID，不使用 lastID
         resolve(item);
       });
     });
