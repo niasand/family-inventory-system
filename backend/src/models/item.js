@@ -15,6 +15,7 @@ class Item {
         added_at: itemData.added_at || now,
         purchased_at: itemData.purchased_at || null,
         purchase_price: itemData.purchase_price || null,
+        purchase_shelf_price: itemData.purchase_shelf_price || null,
         category: itemData.category || null,
         tags: itemData.tags ? JSON.stringify(itemData.tags) : null,
         location: itemData.location || null,
@@ -25,21 +26,22 @@ class Item {
 
       const sql = `
         INSERT INTO items 
-        (id, name, image, description, added_at, purchased_at, purchase_price, category, tags, location, status, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, name, image, description, added_at, purchased_at, purchase_price, purchase_shelf_price, category, tags, location, status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       db.run(sql, [
         item.id, item.name, item.image, item.description, item.added_at, 
-        item.purchased_at, item.purchase_price, item.category, item.tags,
-        item.location, item.status, item.created_at, item.updated_at
+        item.purchased_at, item.purchase_price, item.purchase_shelf_price, 
+        item.category, item.tags, item.location, item.status, 
+        item.created_at, item.updated_at
       ], function(err) {
         if (err) {
           reject(err);
           return;
         }
         // 使用 UUID 作为 ID，不使用 lastID
-        resolve(item);
+        resolve(Item.calculatePricing(item));
       });
     });
   }
@@ -87,7 +89,7 @@ class Item {
           return;
         }
         
-        const items = rows.map(row => ({
+        const items = rows.map(row => Item.calculatePricing({
           ...row,
           tags: row.tags ? JSON.parse(row.tags) : null
         }));
@@ -114,10 +116,10 @@ class Item {
           return;
         }
         
-        const item = {
+        const item = Item.calculatePricing({
           ...row,
           tags: row.tags ? JSON.parse(row.tags) : null
-        };
+        });
         
         resolve(item);
       });
@@ -155,6 +157,10 @@ class Item {
       if (itemData.purchase_price !== undefined) {
         updateFields.push('purchase_price = ?');
         params.push(itemData.purchase_price);
+      }
+      if (itemData.purchase_shelf_price !== undefined) {
+        updateFields.push('purchase_shelf_price = ?');
+        params.push(itemData.purchase_shelf_price);
       }
       if (itemData.category !== undefined) {
         updateFields.push('category = ?');
@@ -194,7 +200,9 @@ class Item {
           return;
         }
         
-        Item.findById(id).then(resolve).catch(reject);
+        Item.findById(id).then(item => {
+          resolve(Item.calculatePricing(item));
+        }).catch(reject);
       });
     });
   }
@@ -310,6 +318,26 @@ class Item {
       { value: 'damaged', label: '损坏', color: '#e6a23c' },
       { value: 'discarded', label: '已丢弃', color: '#f56c6c' }
     ]);
+  }
+
+  // 计算持有天数和持有成本
+  static calculatePricing(item) {
+    const now = Date.now();
+    const purchaseTime = item.purchased_at || item.added_at || item.created_at || now;
+    
+    // 计算持有天数
+    const holdingDays = Math.floor((now - purchaseTime) / (1000 * 60 * 60 * 24));
+    item.holding_days = holdingDays > 0 ? holdingDays : 0;
+    
+    // 计算持有成本（购买价格 / 持有天数）
+    const price = item.purchase_shelf_price || item.purchase_price || 0;
+    if (price > 0 && item.holding_days > 0) {
+      item.holding_cost = parseFloat((price / item.holding_days).toFixed(2));
+    } else {
+      item.holding_cost = 0;
+    }
+    
+    return item;
   }
 }
 

@@ -215,6 +215,15 @@
           <p v-if="item.description" class="item-desc">
             {{ truncateDesc(item.description) }}
           </p>
+
+          <div class="item-pricing">
+            <span v-if="item.holding_days !== undefined" class="holding-days">
+              📅 {{ item.holding_days }}天
+            </span>
+            <span v-if="item.holding_cost > 0" class="holding-cost">
+              💰 日均¥{{ item.holding_cost }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -714,6 +723,23 @@ onMounted(() => {
   font-size: 13px;
   line-height: 1.5;
   margin: 0;
+}
+
+.item-pricing {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.holding-days {
+  color: #667eea;
+  font-weight: 500;
+}
+
+.holding-cost {
+  color: #f59e0b;
+  font-weight: 600;
 }
 
 /* Responsive */

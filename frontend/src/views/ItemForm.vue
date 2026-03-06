@@ -131,6 +131,21 @@
               />
             </div>
           </el-form-item>
+
+          <el-form-item label="购买架价格（成本价）">
+            <div class="price-input-wrapper">
+              <span class="currency-symbol">¥</span>
+              <input
+                v-model.number="form.purchase_shelf_price"
+                type="number"
+                class="modern-input price-input"
+                placeholder="用于计算持有成本（可选）"
+                step="0.01"
+                min="0"
+              />
+            </div>
+            <p class="form-hint">💡 用于计算每日持有成本 = 购买架价格 ÷ 持有天数</p>
+          </el-form-item>
         </div>
 
         <!-- 标签 -->
@@ -204,6 +219,7 @@ const form = reactive({
   added_at: '',
   purchased_at: '',
   purchase_price: null,
+  purchase_shelf_price: null,
   category: '',
   tags: []
 });
@@ -227,6 +243,7 @@ const fetchItem = async () => {
       added_at: item.added_at ? formatDate(item.added_at) : '',
       purchased_at: item.purchased_at ? formatDate(item.purchased_at) : '',
       purchase_price: item.purchase_price,
+      purchase_shelf_price: item.purchase_shelf_price,
       category: item.category || '',
       tags: item.tags || []
     });
