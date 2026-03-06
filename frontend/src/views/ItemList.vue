@@ -11,7 +11,7 @@
           @keyup.enter="handleSearch"
         />
       </el-col>
-      <el-col :xs="12" :sm="8" :md="5">
+      <el-col :xs="12" :sm="8" :md="6">
         <el-select
           v-model="selectedCategory"
           placeholder="选择分类"
@@ -27,7 +27,7 @@
           />
         </el-select>
       </el-col>
-      <el-col :xs="12" :sm="8" :md="5">
+      <el-col :xs="12" :sm="8" :md="6">
         <el-select
           v-model="selectedTag"
           placeholder="选择标签"
