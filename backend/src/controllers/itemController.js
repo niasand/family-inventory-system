@@ -190,6 +190,90 @@ class ItemController {
       });
     }
   }
+
+  // 批量导入物品
+  static async importItems(req, res) {
+    try {
+      const { items } = req.body;
+      
+      if (!Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: '请提供有效的物品数组'
+        });
+      }
+      
+      const results = [];
+      const errors = [];
+      
+      for (let i = 0; i < items.length; i++) {
+        try {
+          const item = await Item.create(items[i]);
+          results.push(item);
+        } catch (error) {
+          errors.push({
+            index: i,
+            item: items[i],
+            error: error.message
+          });
+        }
+      }
+      
+      res.json({
+        success: true,
+        data: {
+          imported: results.length,
+          failed: errors.length,
+          items: results,
+          errors: errors.length > 0 ? errors : undefined
+        },
+        message: `成功导入 ${results.length} 个物品${errors.length > 0 ? `，${errors.length} 个失败` : ''}`
+      });
+    } catch (error) {
+      console.error('导入物品失败:', error);
+      res.status(500).json({
+        success: false,
+        error: '导入物品失败',
+        details: error.message
+      });
+    }
+  }
+
+  // 批量删除所有物品
+  static async deleteAll(req, res) {
+    try {
+      const { confirm } = req.query;
+      
+      if (confirm !== 'true') {
+        return res.status(400).json({
+          success: false,
+          error: '请添加确认参数 ?confirm=true 以执行删除操作'
+        });
+      }
+      
+      // 获取所有物品并逐个删除
+      const allItems = await Item.findAll(10000, 0);
+      let deletedCount = 0;
+      
+      for (const item of allItems) {
+        await Item.delete(item.id);
+        deletedCount++;
+      }
+      
+      res.json({
+        success: true,
+        message: `成功删除 ${deletedCount} 个物品`,
+        data: { deletedCount }
+      });
+    } catch (error) {
+      console.error('批量删除失败:', error);
+      res.status(500).json({
+        success: false,
+        error: '批量删除失败',
+        details: error.message
+      });
+    }
+  }
 }
 
 module.exports = ItemController;
