@@ -109,7 +109,7 @@
           style="width: 100%"
           collapse-tags
           collapse-tags-tooltip
-          max-collapse-tags="3"
+          :max-collapse-tags="3"
         >
           <el-option
             v-for="tag in store.tags"
